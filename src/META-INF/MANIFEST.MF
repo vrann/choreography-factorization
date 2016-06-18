@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Class-Path: mtj-1.0.4.jar arpack_combined_all-0.1.jar core-1.1.2.jar n
+ etlib-native_ref-osx-x86_64-1.1-natives.jar native_ref-java-1.1.jar j
+ niloader-1.1.jar netlib-native_ref-linux-x86_64-1.1-natives.jar netli
+ b-native_ref-linux-i686-1.1-natives.jar netlib-native_ref-win-x86_64-
+ 1.1-natives.jar netlib-native_ref-win-i686-1.1-natives.jar netlib-nat
+ ive_ref-linux-armhf-1.1-natives.jar netlib-native_system-osx-x86_64-1
+ .1-natives.jar native_system-java-1.1.jar netlib-native_system-linux-
+ x86_64-1.1-natives.jar netlib-native_system-linux-i686-1.1-natives.ja
+ r netlib-native_system-linux-armhf-1.1-natives.jar netlib-native_syst
+ em-win-x86_64-1.1-natives.jar netlib-native_system-win-i686-1.1-nativ
+ es.jar lombok-1.16.4.jar java-logging-1.1.jar slf4j-api-1.7.5.jar jcl
+ -over-slf4j-1.7.5.jar log4j-over-slf4j-1.7.5.jar slf4j-jdk14-1.7.5.ja
+ r aws-java-sdk-1.8.10.2.jar aws-java-sdk-core-1.8.10.2.jar commons-lo
+ gging-1.1.1.jar httpclient-4.2.jar httpcore-4.2.jar commons-codec-1.6
+ .jar jackson-core-2.1.1.jar jackson-databind-2.1.1.jar jackson-annota
+ tions-2.1.1.jar joda-time-2.9.4.jar
+Main-Class: com.vrann.Choreography.Choreography
+
