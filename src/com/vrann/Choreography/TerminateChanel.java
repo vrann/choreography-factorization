@@ -10,10 +10,10 @@ import com.vrann.Factorization.Chanels;
 public class TerminateChanel {
     public boolean process() throws Exception
     {
-        AWSSQSDriver driver = new AWSSQSDriver();
+        ChanelInterface driver = new ChanelFactory().getChanelDriver();
 
         //listen for the messages from queue
-        Message message = driver.getMessageFor(Chanels.terminate);
+        MessageInterface message = driver.getMessageFor(Chanels.terminate);
         if (message != null) {
             return true;
         }

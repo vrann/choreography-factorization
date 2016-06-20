@@ -28,6 +28,7 @@ public class Processor {
                 sb.append(line);
                 sb.append("\n");
             }
+            input.close();
         } catch (Exception e) {
             sb.append("failure\n");
             sb.append(e.getStackTrace());

@@ -3,11 +3,12 @@ package com.vrann.Factorization.Chanel;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.util.json.JSONObject;
 import com.amazonaws.util.json.JSONTokener;
+import com.vrann.Choreography.*;
 import com.vrann.Choreography.Chanel.AWSSQSDriver;
-import com.vrann.Choreography.DataDriver;
 import com.vrann.Factorization.A11Processor;
 import com.vrann.Factorization.Chanels;
 import com.vrann.Matrix.DataWriter;
+import com.vrann.Matrix.MatrixType;
 
 import java.util.HashMap;
 
@@ -16,26 +17,18 @@ import java.util.HashMap;
  */
 public class A11L10U01Chanel {
 
-    private String address;
-    private String basePath;
-
-    public A11L10U01Chanel(String address, String basePath) {
-        this.address = address;
-        this.basePath = basePath;
-    }
-
     public void process() throws Exception
     {
-        AWSSQSDriver driver = new AWSSQSDriver();
+        ChanelInterface driver = new ChanelFactory().getChanelDriver();
 
         //listen for the messages from queue
-        Message messageL10U01 = driver.getMessageFor(Chanels.L10U01);
+        MessageInterface messageL10U01 = driver.getMessageFor(Chanels.L10U01);
         if (messageL10U01 == null) {
             return;
         }
 
         //listen for the messages from queue
-        Message messageA11 = driver.getMessageFor(Chanels.A11);
+        MessageInterface messageA11 = driver.getMessageFor(Chanels.A11);
         if (messageA11 == null) {
             return;
         }
@@ -53,43 +46,44 @@ public class A11L10U01Chanel {
             return;
         }
 
+        System.out.printf("process A11L10U01 %s %s \n", K, J);
         String sourceAddressL10 = dataL10U01.get("sourceAddressL10").toString();
         int R = Integer.parseInt(dataL10U01.get("R").toString());
         String sourceAddressU01 = dataL10U01.get("sourceAddressU01").toString();
         String sourceAddressA11 = dataA11.get("address").toString();
 
-        DataDriver dataDriverL10 = new DataDriver(sourceAddressL10, address, basePath);
-        double[][] L10 = dataDriverL10.get(String.format("L/L-%s-%s", I, K));
+        double[][] L10 = DataDriver.get(sourceAddressL10, String.format("L/L-%s-%s", I, K));
 
-        DataDriver dataDriverU01 = new DataDriver(sourceAddressU01, address, basePath);
-        double[][] U01 = dataDriverU01.get(String.format("U/U-%s-%s", K, J));
+        double[][] U01 = DataDriver.get(sourceAddressU01, String.format("U/U-%s-%s", K, J));
 
-        DataDriver dataDriverA11 = new DataDriver(sourceAddressA11, address, basePath);
-        double[][] A11 = dataDriverA11.get(String.format("A/A-%s-%s", I, J));
+        double[][] A11 = DataDriver.get(sourceAddressA11, String.format("A/A-%s-%s", I, J));
 
         A11Processor a11Processor = new A11Processor(A11, L10, U01);
-        DataWriter A11writer = new DataWriter(String.format("A/A-%s-%s", I, J), basePath);
-        A11writer.write(a11Processor.getA11());
+        DataWriter.writeMatrix(String.format("A/A-%s-%s", I, J), a11Processor.getA11(), MatrixType.A);
+
+        //increase K to go to the next iteration
+        K = K + 1;
 
         HashMap<String, String> map = new HashMap<String, String>();
-        map.put("K", Integer.toString(I));
+        map.put("K", Integer.toString(K));
         map.put("R", Integer.toString(R));
+        map.put("J", Integer.toString(I));
         map.put("J", Integer.toString(J));
-        map.put("address", address);
+        map.put("address", SetupConfig.get().getNetworkAddress());
         JSONObject reply = new JSONObject(map);
 
-        if (I == J && I == K + 1) {
+        if (I == J && I == K) {
             driver.send(Chanels.A00, reply);
-        } else if (I == K + 1) {
+        } else if (I == K) {
             driver.send(Chanels.A01, reply);
-        } else if (J == K + 1) {
+        } else if (J == K) {
             driver.send(Chanels.A10, reply);
         } else {
             driver.send(Chanels.A11, reply);
         }
 
-        driver.delete(Chanels.L10U01, messageL10U01.getReceiptHandle());
-        driver.delete(Chanels.A11, messageA11.getReceiptHandle());
+        driver.delete(Chanels.L10U01, messageL10U01.getId());
+        driver.delete(Chanels.A11, messageA11.getId());
 
     }
 }

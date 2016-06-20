@@ -1,0 +1,11 @@
+{
+  "remoteFileDriver": "rsync",
+  "queueDriver": "File",
+  "awsCredentialsPath": "/Users/etulika/.aws/credentials",
+  "chanelsBasePath": "/Users/etulika/Projects/java/choreography/experiments/chanels/",
+  "localDataDir": "/Users/etulika/Projects/java/choreography/experiments/matrix/",
+  "remoteDataDir": "/Users/etulika/Projects/java/choreography/experiments/matrix/",
+  "remoteUser": "ec2-user",
+  "keyPath": "/Users/etulika/.ssh/eugene-east.pem",
+  "networkAddress": "127.0.0.1"
+}

@@ -14,34 +14,32 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.util.json.JSONObject;
+import com.vrann.Choreography.ChanelInterface;
+import com.vrann.Choreography.MessageInterface;
 import com.vrann.Factorization.Chanels;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 /**
  * Created by etulika on 6/13/16.
  */
-public class AWSSQSDriver {
+public class AWSSQSDriver implements ChanelInterface {
 
     private AmazonSQS sqsClient;
 
     private HashMap<String, String> queueUrls = new HashMap<>();
 
-    public AWSSQSDriver() {
-        /*
-         * The ProfileCredentialsProvider will return your [default]
-         * credential profile by reading from the credentials file located at
-         * (~/.aws/credentials).
-         */
+    public AWSSQSDriver(String credentialsFile) {
         AWSCredentials credentials = null;
         try {
-            credentials = new ProfileCredentialsProvider().getCredentials();
+            credentials = new ProfileCredentialsProvider(credentialsFile, "default").getCredentials();
         } catch (Exception e) {
-            throw new AmazonClientException(
+            throw new AmazonClientException(String.format(
                     "Cannot load the credentials from the credential profiles file. " +
                             "Please make sure that your credentials file is at the correct " +
-                            "location (~/.aws/credentials), and is in valid format.",
+                            "location (%s), and is in valid format.", credentialsFile),
                     e);
         }
 
@@ -52,20 +50,20 @@ public class AWSSQSDriver {
 
         for (String queueUrl: sqsClient.listQueues().getQueueUrls()) {
             for (Chanels chanel : Chanels.values()) {
-                if (queueUrl.contains(chanel.toString())) {
+                if (queueUrl.matches(".*/" + chanel.toString() + "$")) {
                     queueUrls.put(chanel.toString(), queueUrl);
                 }
             }
         }
     }
 
-    public Message getMessageFor(Chanels chanel) {
+    public MessageInterface getMessageFor(Chanels chanel) {
         ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(queueUrls.get(chanel.toString()));
         receiveMessageRequest.setMaxNumberOfMessages(1);
         try {
             List<Message> messages = sqsClient.receiveMessage(receiveMessageRequest).getMessages();
             if (messages.size() > 0) {
-                return messages.get(0);
+                return new AwsMessageWrapper(messages.get(0));
             }
         } catch (AmazonServiceException ase) {
             processServiceException(ase);
@@ -75,12 +73,16 @@ public class AWSSQSDriver {
         return null;
     }
 
-    public List<Message> getAllMessagesFor(Chanels chanel) {
+    public List<MessageInterface> getAllMessagesFor(Chanels chanel) {
         ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(queueUrls.get(chanel.toString()));
         receiveMessageRequest.setMaxNumberOfMessages(1);
         try {
+            List<MessageInterface> result = new ArrayList<>();
             List<Message> messages = sqsClient.receiveMessage(receiveMessageRequest).getMessages();
-            return messages;
+            for (Message message: messages) {
+                result.add(new AwsMessageWrapper(message));
+            }
+            return result;
         } catch (AmazonServiceException ase) {
             processServiceException(ase);
         } catch (AmazonClientException ace) {
@@ -93,8 +95,8 @@ public class AWSSQSDriver {
         sqsClient.sendMessage(new SendMessageRequest(queueUrls.get(chanel.toString()), data.toString()));
     }
 
-    public void delete(Chanels chanel, String receiptHandle) {
-        sqsClient.deleteMessage(new DeleteMessageRequest(queueUrls.get(chanel.toString()), receiptHandle));
+    public void delete(Chanels chanel, String messageId) {
+        sqsClient.deleteMessage(new DeleteMessageRequest(queueUrls.get(chanel.toString()), messageId));
     }
 
     private void processServiceException(AmazonServiceException ase) {

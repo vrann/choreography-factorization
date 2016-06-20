@@ -7,8 +7,10 @@ public class Choreography {
 
     public static void main(String[] args) {
         EventLoop loop = new EventLoop();
-        String address = args[0];
-        String basePath = args[1];
-        loop.listenChannels(address, basePath);
+        try {
+            loop.listenChannels(args);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

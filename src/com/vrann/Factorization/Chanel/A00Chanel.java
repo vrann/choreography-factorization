@@ -4,11 +4,13 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
 import com.amazonaws.util.json.JSONTokener;
+import com.vrann.Choreography.*;
 import com.vrann.Choreography.Chanel.AWSSQSDriver;
-import com.vrann.Choreography.DataDriver;
 import com.vrann.Factorization.A00Processor;
 import com.vrann.Factorization.Chanels;
+import com.vrann.Math.Matrix;
 import com.vrann.Matrix.DataWriter;
+import com.vrann.Matrix.MatrixType;
 
 import java.util.HashMap;
 
@@ -17,21 +19,12 @@ import java.util.HashMap;
  */
 public class A00Chanel {
 
-    private String address;
-    private String basePath;
-
-    public A00Chanel(String address, String basePath) {
-
-        this.address = address;
-        this.basePath = basePath;
-    }
-
     public void process() throws Exception
     {
-        AWSSQSDriver driver = new AWSSQSDriver();
+        ChanelInterface driver = new ChanelFactory().getChanelDriver();
 
         //listen for the messages from queue
-        Message message = driver.getMessageFor(Chanels.A00);
+        MessageInterface message = driver.getMessageFor(Chanels.A00);
         if (message != null) {
             /*
              {
@@ -42,6 +35,8 @@ public class A00Chanel {
              */
             JSONObject data = new JSONObject(new JSONTokener(message.getBody()));
             int K = Integer.parseInt(data.get("K").toString());
+            System.out.printf("process A00 %s \n", K);
+
             int R = Integer.parseInt(data.get("R").toString());
             int J = Integer.parseInt(data.get("J").toString());
             if (K != 0 || J != 0) {
@@ -49,8 +44,7 @@ public class A00Chanel {
             }
             String sourceAddress = data.get("address").toString();
 
-            DataDriver dataDriver = new DataDriver(sourceAddress, address, basePath);
-            double[][] A00 = dataDriver.get(String.format("A/A-%s-%s", K, K));
+            double[][] A00 = DataDriver.get(sourceAddress, String.format("A/A-%s-%s", K, K));
 
             A00Processor a00processor = new A00Processor(A00);
             a00processor.calculate();
@@ -59,11 +53,8 @@ public class A00Chanel {
             a00processor.getL00I();
             a00processor.getU00I();
 
-            DataWriter L00 = new DataWriter(String.format("L/L-%s-%s", K, K), basePath);
-            L00.writeL(a00processor.getL00());
-
-            DataWriter U00 = new DataWriter(String.format("U/U-%s-%s", K, K), basePath);
-            U00.writeU(a00processor.getU00());
+            DataWriter.writeMatrix(String.format("L/L-%s-%s", K, K), a00processor.getL00(), MatrixType.L);
+            DataWriter.writeMatrix(String.format("U/U-%s-%s", K, K), a00processor.getU00(), MatrixType.U);
 
             if (K == R) {
                 //last element processed, terminate
@@ -71,15 +62,12 @@ public class A00Chanel {
                 return;
             }
 
-            DataWriter L00I = new DataWriter(String.format("LI/LI-%s", K), basePath);
-            L00I.writeL(a00processor.getL00I());
+            DataWriter.writeMatrix(String.format("LI/LI-%s", K), a00processor.getL00I(), MatrixType.L);
+            DataWriter.writeMatrix(String.format("UI/UI-%s", K), a00processor.getU00I(), MatrixType.U);
 
-            DataWriter U00I = new DataWriter(String.format("UI/UI-%s", K), basePath);
-            U00I.writeU(a00processor.getU00I());
-
-            for (int j = K; j < R; j++) {
+            for (int j = K + 1; j < R; j++) {
                 HashMap<String, String> map = new HashMap<String, String>();
-                map.put("address", this.address);
+                map.put("address", SetupConfig.get().getNetworkAddress());
                 map.put("K", Integer.toString(K));
                 map.put("R", Integer.toString(R));
 
@@ -87,7 +75,7 @@ public class A00Chanel {
                 driver.send(Chanels.U00I, reply);
                 driver.send(Chanels.L00I, reply);
             }
-            driver.delete(Chanels.A00, message.getReceiptHandle());
+            driver.delete(Chanels.A00, message.getId());
         }
     }
 }

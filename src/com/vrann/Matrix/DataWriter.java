@@ -1,12 +1,11 @@
 package com.vrann.Matrix;
 
-import com.vrann.Math.Matrix;
+import com.vrann.Choreography.SetupConfig;
 import no.uib.cipr.matrix.DenseMatrix;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.text.DecimalFormat;
 
 /**
  * Created by etulika on 6/12/16.
@@ -15,9 +14,24 @@ public class DataWriter {
 
     private String matrixFileName;
 
+    public static void writeMatrix(String matrixFileName, double[][] matrix, MatrixType type) throws Exception {
+        String dirName = SetupConfig.get().getLocalDataDir();
+        DataWriter writer = new DataWriter(matrixFileName, dirName);
+        switch (type) {
+            case A:
+                writer.write(matrix);
+                break;
+            case L:
+                writer.writeL(matrix);
+                break;
+            case U:
+                writer.writeU(matrix);
+                break;
+        }
+    }
+
     public DataWriter(String matrixFileName, String basePath) {
-        String dirName = basePath + "/matrix/";
-        this.matrixFileName = dirName + matrixFileName;
+        this.matrixFileName = basePath + matrixFileName;
     }
 
     public void write(double[][] matrix) throws Exception {

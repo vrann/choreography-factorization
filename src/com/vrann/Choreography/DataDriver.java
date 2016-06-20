@@ -11,37 +11,22 @@ import java.io.InputStreamReader;
  */
 public class DataDriver {
 
-    private String sourceAddress;
+    public static double[][] get(String sourceAddress, String matrixFileName) throws Exception
+    {
+        SetupConfig config = SetupConfig.get();
 
-    private String currentAddress;
+        String local = config.getLocalDataDir() + matrixFileName;
+        String remote = config.getLocalDataDir() + matrixFileName;
 
-    private String dirName;
-
-    private String user;
-
-    private String keyName;
-
-    public DataDriver(String sourceAddress, String currentAddress, String basePath) {
-        this.sourceAddress = sourceAddress;
-        this.currentAddress = currentAddress;
-        this.dirName = basePath + "/matrix/";
-        this.user = "ec2-user";
-        this.keyName = basePath + "/.ssh/eugene-east.pem";
-    }
-
-    public double[][] get(String matrixFileName) throws Exception {
-        String local = dirName + matrixFileName;
-        String remote = dirName + matrixFileName;
-
-        if (sourceAddress.equals(currentAddress) || DataReader.exists(local)) {
+        if (sourceAddress.equals(config.getNetworkAddress()) || DataReader.exists(local)) {
             return DataReader.getMatrix(local);
         }
 
         String[] rsyncCommand = new String[] {
                 "rsync",
                 "-e",
-                String.format("ssh -o StrictHostKeyChecking=no -i %s", keyName),
-                String.format("%s@%s:%s", user, sourceAddress, remote),
+                String.format("ssh -o StrictHostKeyChecking=no -i %s", config.getKeyPath()),
+                String.format("%s@%s:%s", config.getRemoteUser(), sourceAddress, remote),
                 local
         };
 
@@ -63,10 +48,13 @@ public class DataDriver {
             errorDescriptionBuilder.append(errorLine + "\n");
         }
         int exitVal = p.waitFor();
-        if (errorDescriptionBuilder.toString().length() > 0) {
+        if (exitVal > 0) {
             errorDescriptionBuilder.append("Process exitValue:" + exitVal);
             throw new Exception(errorDescriptionBuilder.toString());
+        } else {
+            System.out.println(errorDescriptionBuilder.toString());
         }
+        br.close();
 
         if (DataReader.exists(local)) {
             return DataReader.getMatrix(local);

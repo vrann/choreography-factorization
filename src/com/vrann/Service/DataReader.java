@@ -21,7 +21,7 @@ public class DataReader {
     public static double[][] getMatrix(String matrixFileName) throws Exception
     {
         if (!exists(matrixFileName)) {
-            throw new Exception("Matrix does not exists");
+            throw new Exception(String.format("Matrix does not exists %s", matrixFileName));
         }
         BufferedReader br = new BufferedReader(new FileReader(matrixFileName));
         String line;
@@ -48,6 +48,7 @@ public class DataReader {
             }
             i++;
         }
+        br.close();
         return matrix;
     }
 }

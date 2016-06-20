@@ -4,6 +4,9 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.util.json.JSONObject;
 import com.amazonaws.util.json.JSONTokener;
 import com.vrann.Choreography.Chanel.AWSSQSDriver;
+import com.vrann.Choreography.ChanelFactory;
+import com.vrann.Choreography.ChanelInterface;
+import com.vrann.Choreography.MessageInterface;
 import com.vrann.Factorization.Chanels;
 
 import java.util.HashMap;
@@ -15,16 +18,16 @@ public class L10U01Chanel {
 
     public void process() throws Exception
     {
-        AWSSQSDriver driver = new AWSSQSDriver();
+        ChanelInterface driver = new ChanelFactory().getChanelDriver();
 
         //listen for the messages from queue
-        Message messageL10 = driver.getMessageFor(Chanels.L10);
+        MessageInterface messageL10 = driver.getMessageFor(Chanels.L10);
         if (messageL10 == null) {
             return;
         }
 
         //listen for the messages from queue
-        Message messageU01 = driver.getMessageFor(Chanels.U01);
+        MessageInterface messageU01 = driver.getMessageFor(Chanels.U01);
         if (messageU01 == null) {
             return;
         }
@@ -45,6 +48,8 @@ public class L10U01Chanel {
         int JL10 = Integer.parseInt(dataL10.get("J").toString());
         String sourceAddressU01 = dataU01.get("address").toString();
 
+        System.out.printf("process L10U01 %s %s \n", JL10, JU01);
+
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("K", Integer.toString(KU01));
         map.put("R", Integer.toString(RU01));
@@ -56,7 +61,7 @@ public class L10U01Chanel {
         JSONObject reply = new JSONObject(map);
         driver.send(Chanels.L10U01, reply);
 
-        driver.delete(Chanels.U01, messageL10.getReceiptHandle());
-        driver.delete(Chanels.L10, messageU01.getReceiptHandle());
+        driver.delete(Chanels.U01, messageL10.getId());
+        driver.delete(Chanels.L10, messageU01.getId());
     }
 }
