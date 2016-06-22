@@ -55,7 +55,7 @@ public class DataDriver {
             System.out.println(errorDescriptionBuilder.toString());
         }
         br.close();
-
+        System.out.println("Command rsync finished.");
         if (DataReader.exists(local)) {
             return DataReader.getMatrix(local);
         }

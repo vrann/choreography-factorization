@@ -11,6 +11,7 @@ import com.vrann.Matrix.DataWriter;
 import com.vrann.Matrix.MatrixType;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by etulika on 6/16/16.
@@ -28,8 +29,8 @@ public class A11L10U01Chanel {
         }
 
         //listen for the messages from queue
-        MessageInterface messageA11 = driver.getMessageFor(Chanels.A11);
-        if (messageA11 == null) {
+        List<MessageInterface> messagesA11 = driver.getAllMessagesFor(Chanels.A11);
+        if (messagesA11.size() == 0) {
             return;
         }
 
@@ -38,11 +39,22 @@ public class A11L10U01Chanel {
         int J = Integer.parseInt(dataL10U01.get("J").toString());
         int I = Integer.parseInt(dataL10U01.get("I").toString());
 
-        JSONObject dataA11 = new JSONObject(new JSONTokener(messageA11.getBody()));
-        int KA11 = Integer.parseInt(dataA11.get("K").toString());
-        int JA11 = Integer.parseInt(dataA11.get("J").toString());
+        MessageInterface messageA11 = null;
+        JSONObject dataA11 = null;
+        for (MessageInterface message: messagesA11) {
+            JSONObject data = new JSONObject(new JSONTokener(message.getBody()));
+            int KA11 = Integer.parseInt(data.get("K").toString());
+            int JA11 = Integer.parseInt(data.get("J").toString());
+            int IA11 = Integer.parseInt(data.get("I").toString());
 
-        if (I != KA11 || J != JA11) {
+            if (I == IA11 && J == JA11 && K == KA11) {
+                messageA11 = message;
+                dataA11 = data;
+                break;
+            }
+        }
+
+        if (messageA11 == null) {
             return;
         }
 
@@ -67,7 +79,7 @@ public class A11L10U01Chanel {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("K", Integer.toString(K));
         map.put("R", Integer.toString(R));
-        map.put("J", Integer.toString(I));
+        map.put("I", Integer.toString(I));
         map.put("J", Integer.toString(J));
         map.put("address", SetupConfig.get().getNetworkAddress());
         JSONObject reply = new JSONObject(map);

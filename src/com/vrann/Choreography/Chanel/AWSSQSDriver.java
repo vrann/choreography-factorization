@@ -13,6 +13,7 @@ import com.amazonaws.services.sqs.model.DeleteMessageRequest;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
+import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
 import com.vrann.Choreography.ChanelInterface;
 import com.vrann.Choreography.MessageInterface;
@@ -75,7 +76,7 @@ public class AWSSQSDriver implements ChanelInterface {
 
     public List<MessageInterface> getAllMessagesFor(Chanels chanel) {
         ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(queueUrls.get(chanel.toString()));
-        receiveMessageRequest.setMaxNumberOfMessages(1);
+        receiveMessageRequest.setMaxNumberOfMessages(10);
         try {
             List<MessageInterface> result = new ArrayList<>();
             List<Message> messages = sqsClient.receiveMessage(receiveMessageRequest).getMessages();
@@ -95,8 +96,12 @@ public class AWSSQSDriver implements ChanelInterface {
         sqsClient.sendMessage(new SendMessageRequest(queueUrls.get(chanel.toString()), data.toString()));
     }
 
+    public void send(Chanels chanel, JSONArray data) {
+        sqsClient.sendMessage(new SendMessageRequest(queueUrls.get(chanel.toString()), data.toString()));
+    }
+
     public void delete(Chanels chanel, String messageId) {
-        sqsClient.deleteMessage(new DeleteMessageRequest(queueUrls.get(chanel.toString()), messageId));
+        sqsClient.deleteMessage(new DeleteMessageRequest().withQueueUrl(queueUrls.get(chanel.toString())).withReceiptHandle(messageId));
     }
 
     private void processServiceException(AmazonServiceException ase) {

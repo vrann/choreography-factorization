@@ -1,6 +1,7 @@
 package com.vrann.Choreography.Chanel;
 
 import com.amazonaws.util.JodaTime;
+import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
 import com.vrann.Choreography.ChanelInterface;
 import com.vrann.Choreography.MessageInterface;
@@ -32,25 +33,37 @@ public class FileDriver implements ChanelInterface {
 
     private List<Path> getUnlockedMessages(Chanels chanel) throws Exception {
         unlockLocked(chanelsBasePath + chanel);
-        DirectoryStream directory = Files.newDirectoryStream(Paths.get(chanelsBasePath + chanel));
+
+        File directory = new File(chanelsBasePath + chanel);
+        File[] files = directory.listFiles();
+
+        Arrays.sort(files, new Comparator<File>(){
+            public int compare(File f1, File f2) {
+                return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
+            }
+        });
+
         ArrayList<Path> result = new ArrayList<>();
-        for (Object item: directory) {
+        for (File item: files) {
             Path path = Paths.get(item.toString());
             if (Files.isRegularFile(path)) {
                 result.add(path);
             }
         }
-        directory.close();
         return result;
     }
 
     private void unlockLocked(String chanelPath) throws Exception {
         Path inflightMessages = Paths.get(chanelPath + "/inflight");
-        DirectoryStream directory = Files.newDirectoryStream(inflightMessages);
-        for (Object item: directory) {
-            Path path = Paths.get(item.toString());
+
+        File directory = new File(chanelPath + "/inflight");
+        File[] files = directory.listFiles();
+
+        //DirectoryStream directory = Files.newDirectoryStream(inflightMessages);
+        for (File item: files) {
+            Path path = Paths.get(item.getPath());
             Calendar delay = Calendar.getInstance();
-            delay.roll(Calendar.SECOND, -1);
+            delay.roll(Calendar.SECOND, 0);
             FileTime delayTime = FileTime.from(delay.toInstant());
 
             if (Files.getLastModifiedTime(path).compareTo(delayTime) < 0) {
@@ -63,7 +76,7 @@ public class FileDriver implements ChanelInterface {
                 }
             }
         }
-        directory.close();
+        //directory.close();
     }
 
     private Path getLockedPath(Path filePath) {
@@ -105,6 +118,14 @@ public class FileDriver implements ChanelInterface {
     }
 
     public void send(Chanels chanel, JSONObject data) throws Exception {
+        String path = SetupConfig.get().getChanelsBasePath() + chanel;
+        BufferedWriter outputWriter = new BufferedWriter(new FileWriter(path + "/" + UUID.randomUUID()));
+        outputWriter.write(data.toString());
+        outputWriter.flush();
+        outputWriter.close();
+    }
+
+    public void send(Chanels chanel, JSONArray data) throws Exception {
         String path = SetupConfig.get().getChanelsBasePath() + chanel;
         BufferedWriter outputWriter = new BufferedWriter(new FileWriter(path + "/" + UUID.randomUUID()));
         outputWriter.write(data.toString());
