@@ -3,6 +3,7 @@ package com.vrann.Choreography.Chanel;
 import com.amazonaws.util.JodaTime;
 import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
+import com.amazonaws.util.json.JSONTokener;
 import com.vrann.Choreography.ChanelInterface;
 import com.vrann.Choreography.MessageInterface;
 import com.vrann.Choreography.SetupConfig;
@@ -27,12 +28,14 @@ public class FileDriver implements ChanelInterface {
 
     private String chanelsBasePath;
 
+    private static int LOCK_PERIOD = 10;
+
     public FileDriver(String chanelsBasePath) {
         this.chanelsBasePath = chanelsBasePath;
     }
 
     private List<Path> getUnlockedMessages(Chanels chanel) throws Exception {
-        unlockLocked(chanelsBasePath + chanel);
+        //unlockLocked(chanelsBasePath + chanel);
 
         File directory = new File(chanelsBasePath + chanel);
         File[] files = directory.listFiles();
@@ -63,7 +66,7 @@ public class FileDriver implements ChanelInterface {
         for (File item: files) {
             Path path = Paths.get(item.getPath());
             Calendar delay = Calendar.getInstance();
-            delay.roll(Calendar.SECOND, 0);
+            delay.roll(Calendar.SECOND, LOCK_PERIOD);
             FileTime delayTime = FileTime.from(delay.toInstant());
 
             if (Files.getLastModifiedTime(path).compareTo(delayTime) < 0) {
@@ -92,6 +95,7 @@ public class FileDriver implements ChanelInterface {
             Files.setLastModifiedTime(target, FileTime.fromMillis(DateTime.now().getMillis()));
             return true;
         } catch (Exception e) {
+            System.out.println("attempted move: false");
             return false;
         }
     }
@@ -115,6 +119,12 @@ public class FileDriver implements ChanelInterface {
             }
         }
         return result;
+    }
+
+    public void requeue(Chanels chanel, MessageInterface message) throws Exception
+    {
+        send(chanel, new JSONObject(new JSONTokener(message.getBody())));
+        delete(chanel, message.getId());
     }
 
     public void send(Chanels chanel, JSONObject data) throws Exception {

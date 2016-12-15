@@ -1,6 +1,6 @@
 {
   "remoteFileDriver": "rsync",
-  "queueDriver": "SQS",
+  "queueDriver": "File",
   "awsCredentialsPath": "/Users/etulika/.aws/credentials",
   "chanelsBasePath": "/Users/etulika/Projects/java/choreography/experiments/chanels/",
   "localDataDir": "/Users/etulika/Projects/java/choreography/experiments/matrix/",

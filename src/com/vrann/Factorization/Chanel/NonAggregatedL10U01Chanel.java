@@ -28,8 +28,7 @@ public class NonAggregatedL10U01Chanel {
         List<MessageInterface> messagesL10 = driver.getAllMessagesFor(Chanels.L10);
         if (messagesL10.size() == 0) {
             for (MessageInterface message: messagesU01) {
-                driver.send(Chanels.U01, new JSONObject(new JSONTokener(message.getBody())));
-                driver.delete(Chanels.U01, message.getId());
+                driver.requeue(Chanels.U01, message);
             }
             return;
         }
@@ -37,24 +36,29 @@ public class NonAggregatedL10U01Chanel {
         List<JSONObject> u01messages = new ArrayList<>();
         for (MessageInterface messageU01: messagesU01) {
             u01messages.add(new JSONObject(new JSONTokener(messageU01.getBody())));
+            driver.delete(Chanels.U01, messageU01.getId());
         }
 
         List<JSONObject> l10messages = new ArrayList<>();
         for (MessageInterface messageL10: messagesL10) {
-            l10messages.add(new JSONObject(new JSONTokener(messageL10.getBody())));;
+            l10messages.add(new JSONObject(new JSONTokener(messageL10.getBody())));
+            driver.delete(Chanels.L10, messageL10.getId());
         }
 
         HashMap<String, JSONObject> u01map = new HashMap<>();
         for (JSONObject u01: u01messages) {
             String KU01 = u01.get("K").toString();
+            String JU01 = u01.get("J").toString();
             JSONObject usedU01 = new JSONObject();
             if (u01.has("usedWith")) {
                 usedU01 = (JSONObject) u01.get("usedWith");
             }
             u01.put("usedWith", usedU01);
-            u01map.put(KU01, u01);
+            //System.out.print(u01.get("K").toString() + ":" + u01.get("J").toString() + "~");
+            u01map.put(JU01, u01);
         }
-
+//        System.out.println("u01map length" + u01map.size());
+//        System.out.println("l10messages length" + l10messages.size());
         for (JSONObject l10: l10messages) {
             String KL10 = l10.get("K").toString();
             JSONObject usedL10 = new JSONObject();
@@ -62,36 +66,52 @@ public class NonAggregatedL10U01Chanel {
                 usedL10 = (JSONObject) l10.get("usedWith");
             }
             l10.put("usedWith", usedL10);
-            if (u01map.containsKey(KL10)
-                    && !((JSONObject)l10.get("usedWith")).has((String)u01map.get(KL10).get("K"))
-                    && !((JSONObject)u01map.get(KL10).get("usedWith")).has(KL10)) {
+//            System.out.println(usedL10.names());
 
-                JSONObject u01 = u01map.get(KL10);
+            for (String UJ: u01map.keySet()) {
+                //System.out.print(UJ + " ");
+                JSONObject u01 = u01map.get(UJ);
+                String UK = u01.get("K").toString();
                 String JL10 = l10.get("J").toString();
-                String addressL10 = l10.get("address").toString();
+                if (!usedL10.has(UJ) && Integer.valueOf(UK) == Integer.valueOf(KL10)) {
+                    if (((JSONObject)u01.get("usedWith")).has(JL10)) {
+//                        throw new Exception(
+//                                String.format("L matrix was used with U while U wasn't used with L: %s %s %s %s %s",
+//                                        usedL10,
+//                                        u01.get("usedWith"),
+//                                        JL10,
+//                                        UJ,
+//                                        UK
+//                                )
+//                        );
+                    }
+                    String addressL10 = l10.get("address").toString();
+                    HashMap<String, String> map = new HashMap<String, String>();
+                    map.put("K", KL10);
+                    map.put("R", l10.get("R").toString());
+                    map.put("I", JL10);
+                    map.put("J", UJ);
+                    map.put("sourceAddressL10", addressL10);
+                    map.put("sourceAddressU01", u01.get("address").toString());
 
-                HashMap<String, String> map = new HashMap<String, String>();
-                map.put("K", KL10);
-                map.put("R", l10.get("R").toString());
-                map.put("I", JL10);
-                map.put("J", u01.get("J").toString());
-                map.put("sourceAddressL10", addressL10);
-                map.put("sourceAddressU01", u01.get("address").toString());
+                    JSONObject usedU01 = (JSONObject) u01.get("usedWith");
+                    usedU01.put(JL10, true);
+                    usedL10.put(UJ, true);
 
-                JSONObject usedU01 = (JSONObject) u01.get("usedWith");
-                usedU01.put(JL10, true);
-                usedL10.put(u01.get("J").toString(), true);
+                    u01.put("usedWith", usedU01);
+                    l10.put("usedWith", usedL10);
 
-                u01.put("usedWith", usedU01);
-                l10.put("usedWith", usedL10);
-
-                JSONObject reply = new JSONObject(map);
-                driver.send(Chanels.L10U01, reply);
-
-                if (u01messages.size() > 0 && l10messages.size() > 0) {
-                    System.out.printf("process aggregate L10 and U01 I:%s J:%s \n", JL10, u01.get("J").toString());
+                    JSONObject reply = new JSONObject(map);
+                    driver.send(Chanels.L10U01, reply);
+                    System.out.println("L10 U01 aggregated: " + JL10 + " " + UJ );
+//                    if (u01messages.size() > 0 && l10messages.size() > 0) {
+//                        System.out.printf("process aggregate L10 and U01 I:%s J:%s \n", JL10, u01.get("J").toString());
+//                    }
+                } else {
+//                    System.out.println("key is used already: " + UJ + " " + UK + " " + KL10);
                 }
             }
+//            System.out.println();
         }
 
 
@@ -99,7 +119,7 @@ public class NonAggregatedL10U01Chanel {
             int RU01 = Integer.parseInt(u01.get("R").toString());
             int KU01 = Integer.parseInt(u01.get("K").toString());
             JSONObject usedU01 = (JSONObject)u01.get("usedWith");
-            if (usedU01.length() < RU01 - KU01 -1) {
+            if (usedU01.length() < RU01 - KU01 - 1) {
                 driver.send(Chanels.U01, u01);
             } else {
                 System.out.printf("Remove matrix used enough U %s %s %s \n", KU01, u01.get("J"), usedU01);

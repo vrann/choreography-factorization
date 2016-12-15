@@ -11,13 +11,15 @@ import java.util.List;
  * Created by etulika on 6/18/16.
  */
 public interface ChanelInterface {
-    public  MessageInterface getMessageFor(Chanels chanel) throws Exception;
+    MessageInterface getMessageFor(Chanels chanel) throws Exception;
 
-    public List<MessageInterface> getAllMessagesFor(Chanels chanel) throws Exception;
+    List<MessageInterface> getAllMessagesFor(Chanels chanel) throws Exception;
 
-    public void send(Chanels chanel, JSONObject data) throws Exception;
+    void send(Chanels chanel, JSONObject data) throws Exception;
 
-    public void send(Chanels chanel, JSONArray data) throws Exception;
+    void send(Chanels chanel, JSONArray data) throws Exception;
 
-    public void delete(Chanels chanel, String messageId) throws Exception;
+    void delete(Chanels chanel, String messageId) throws Exception;
+
+    void requeue(Chanels chanel, MessageInterface message) throws Exception;
 }

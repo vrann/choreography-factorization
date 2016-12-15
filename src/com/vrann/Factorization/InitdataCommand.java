@@ -19,7 +19,7 @@ public class InitdataCommand {
             int R = Integer.parseInt(args[0]);
             int M = Integer.parseInt(args[1]);
             int K = 0;
-            for (int I = 0; I < R; I++) {
+                for (int I = 0; I < R; I++) {
                 for (int J = 0; J < R; J++) {
                     HashMap<String, String> map = new HashMap<String, String>();
                     map.put("M", Integer.toString(M));
@@ -28,7 +28,6 @@ public class InitdataCommand {
                     map.put("J", Integer.toString(J));
                     map.put("R", Integer.toString(R));
                     map.put("K", Integer.toString(K));
-
 
                     JSONObject reply = new JSONObject(map);
                     driver.send(Chanels.generate, reply);

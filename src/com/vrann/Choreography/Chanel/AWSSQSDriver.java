@@ -15,6 +15,7 @@ import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
+import com.amazonaws.util.json.JSONTokener;
 import com.vrann.Choreography.ChanelInterface;
 import com.vrann.Choreography.MessageInterface;
 import com.vrann.Factorization.Chanels;
@@ -72,6 +73,12 @@ public class AWSSQSDriver implements ChanelInterface {
             processClientException(ace);
         }
         return null;
+    }
+
+    public void requeue(Chanels chanel, MessageInterface message) throws Exception
+    {
+        send(chanel, new JSONObject(new JSONTokener(message.getBody())));
+        delete(chanel, message.getId());
     }
 
     public List<MessageInterface> getAllMessagesFor(Chanels chanel) {

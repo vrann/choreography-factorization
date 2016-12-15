@@ -69,7 +69,7 @@ public class A00Chanel {
         DataWriter.writeMatrix(String.format("LI/LI-%s", K), a00processor.getL00I(), MatrixType.L);
         DataWriter.writeMatrix(String.format("UI/UI-%s", K), a00processor.getU00I(), MatrixType.U);
 
-        for (int j = K + 1; j < R; j++) {
+        //for (int j = K + 1; j < R; j++) {
             HashMap<String, String> map = new HashMap<String, String>();
             map.put("address", SetupConfig.get().getNetworkAddress());
             map.put("K", Integer.toString(K));
@@ -78,7 +78,7 @@ public class A00Chanel {
             JSONObject reply = new JSONObject(map);
             driver.send(Chanels.U00I, reply);
             driver.send(Chanels.L00I, reply);
-        }
+        //}
         driver.delete(Chanels.A00, message.getId());
     }
 }

@@ -1,7 +1,7 @@
 package com.vrann.Matrix;
 
 import com.vrann.Choreography.SetupConfig;
-import no.uib.cipr.matrix.DenseMatrix;
+//import no.uib.cipr.matrix.DenseMatrix;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -91,20 +91,20 @@ public class DataWriter {
         outputWriter.close();
     }
 
-    public void write(DenseMatrix matrix) throws Exception {
-        int numRows = matrix.numRows();
-        int numCols = matrix.numColumns();
-        BufferedWriter outputWriter = new BufferedWriter(new FileWriter(new File(matrixFileName), false));
-        outputWriter.write(numRows + " " + numCols + "\n");
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
-                double value = matrix.get(i, j);
-                outputWriter.write(Double.toString(value));
-                outputWriter.write(" ");
-            }
-            outputWriter.write("\n");
-        }
-        outputWriter.flush();
-        outputWriter.close();
-    }
+//    public void write(DenseMatrix matrix) throws Exception {
+//        int numRows = matrix.numRows();
+//        int numCols = matrix.numColumns();
+//        BufferedWriter outputWriter = new BufferedWriter(new FileWriter(new File(matrixFileName), false));
+//        outputWriter.write(numRows + " " + numCols + "\n");
+//        for (int i = 0; i < numRows; i++) {
+//            for (int j = 0; j < numCols; j++) {
+//                double value = matrix.get(i, j);
+//                outputWriter.write(Double.toString(value));
+//                outputWriter.write(" ");
+//            }
+//            outputWriter.write("\n");
+//        }
+//        outputWriter.flush();
+//        outputWriter.close();
+//    }
 }

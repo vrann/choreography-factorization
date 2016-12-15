@@ -5,5 +5,6 @@ package com.vrann.Factorization;
  */
 public enum Roles {
     Mapper,
-    Calculator
+    Calculator,
+    Generator
 }

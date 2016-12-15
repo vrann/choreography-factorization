@@ -8,6 +8,8 @@ public enum Chanels {
     A01,
     A10,
     A11,
+    A01L00I,
+    A10U00I,
     L00I,
     L10,
     L10U01,

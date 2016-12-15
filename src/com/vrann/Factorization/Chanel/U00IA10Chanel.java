@@ -22,6 +22,42 @@ public class U00IA10Chanel {
         ChanelInterface driver = new ChanelFactory().getChanelDriver();
 
         //listen for the messages from queue
+        MessageInterface messageU00IA10 = driver.getMessageFor(Chanels.A10U00I);
+        if (messageU00IA10 == null) {
+            return;
+        }
+        JSONObject data = new JSONObject(new JSONTokener(messageU00IA10.getBody()));
+        int K = Integer.parseInt(data.get("K").toString());
+        int I = Integer.parseInt(data.get("I").toString());
+        System.out.printf("process U00IA10 %s %s \n", K, I);
+
+        String sourceAddressU00I = data.get("sourceAddressU00I").toString();
+        int R = Integer.parseInt(data.get("R").toString());
+        String sourceAddressA10 = data.get("sourceAddressA10").toString();
+
+        double[][] U00I = DataDriver.get(sourceAddressU00I, String.format("UI/UI-%s", K));
+        double[][] A10 = DataDriver.get(sourceAddressA10, String.format("A/A-%s-%s", I, K));
+
+        L10Processor l10Processor = new L10Processor(A10, U00I);
+        l10Processor.calculate();
+        DataWriter.writeMatrix(String.format("L/L-%s-%s", I, K), l10Processor.getL10(), MatrixType.L);
+
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("address", SetupConfig.get().getNetworkAddress());
+        map.put("K", Integer.toString(K));
+        map.put("R", Integer.toString(R));
+        map.put("J", Integer.toString(I));
+
+        JSONObject reply = new JSONObject(map);
+        driver.send(Chanels.L10, reply);
+        driver.delete(Chanels.A10U00I, messageU00IA10.getId());
+    }
+
+    public void process2() throws Exception
+    {
+        ChanelInterface driver = new ChanelFactory().getChanelDriver();
+
+        //listen for the messages from queue
         MessageInterface messageA10 = driver.getMessageFor(Chanels.A10);
         if (messageA10 == null) {
             return;

@@ -1,6 +1,6 @@
 package com.vrann.Matrix;
 
-import no.uib.cipr.matrix.DenseMatrix;
+//import no.uib.cipr.matrix.DenseMatrix;
 
 /**
  * Created by etulika on 6/6/16.
@@ -22,14 +22,14 @@ public class Multiplicator {
         return result;
     }
 
-    public static DenseMatrix multiplyEffective(double[][] A, double[][] B)
-    {
-        DenseMatrix matrixA = new DenseMatrix(A);
-        DenseMatrix matrixB = new DenseMatrix(B);
-        DenseMatrix matrixC = new DenseMatrix(A.length, A.length);
-        matrixA.mult(matrixB, matrixC);
-        return matrixC;
-    }
+//    public static DenseMatrix multiplyEffective(double[][] A, double[][] B)
+//    {
+//        DenseMatrix matrixA = new DenseMatrix(A);
+//        DenseMatrix matrixB = new DenseMatrix(B);
+//        DenseMatrix matrixC = new DenseMatrix(A.length, A.length);
+//        matrixA.mult(matrixB, matrixC);
+//        return matrixC;
+//    }
 
     public static double[] multiplyVector(double[][] A, double[] C) {
         double[] result = new double[C.length];

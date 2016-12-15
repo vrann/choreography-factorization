@@ -192,7 +192,8 @@ public class LU {
 
             for (int i = n + 1; i < N; i++) {
                 if (Math.abs(U[n][n]) <= 1.0E-10D) {
-                    throw new RuntimeException("Matrix is singular or nearly singular");
+                    U[n][n] = 1.0E-10D;
+                    //throw new RuntimeException("Matrix is singular or nearly singular");
                 }
                 double factor = (U[i][n] / U[n][n]);
                 for (int j = 0; j < U[i].length; j++) {

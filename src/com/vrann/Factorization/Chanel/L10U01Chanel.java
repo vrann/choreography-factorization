@@ -6,8 +6,13 @@ import com.amazonaws.util.json.JSONTokener;
 import com.vrann.Choreography.Chanel.AWSSQSDriver;
 import com.vrann.Choreography.ChanelFactory;
 import com.vrann.Choreography.ChanelInterface;
+import com.vrann.Choreography.DataDriver;
 import com.vrann.Choreography.MessageInterface;
+import com.vrann.Choreography.SetupConfig;
 import com.vrann.Factorization.Chanels;
+import com.vrann.Factorization.L10Processor;
+import com.vrann.Matrix.DataWriter;
+import com.vrann.Matrix.MatrixType;
 
 import java.util.HashMap;
 
@@ -29,6 +34,7 @@ public class L10U01Chanel {
         //listen for the messages from queue
         MessageInterface messageU01 = driver.getMessageFor(Chanels.U01);
         if (messageU01 == null) {
+            driver.requeue(Chanels.L10, messageL10);
             return;
         }
 

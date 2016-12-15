@@ -32,15 +32,48 @@ public class EventLoop {
                     (new A11L10U01AggregatorChannel()).process();
                     (new NonAggregatedL10U01Chanel()).process();
                     (new AggregatedA11L10U01Chanel()).process();
+                    (new L00IA01AggregatorChannel()).process();
+                    (new U00IA10AggregatorChannel()).process();
                 } else {
                     for (String role: roles) {
-                        if (role.equals(Roles.Mapper.name())) {
+                        if (role.equals(Roles.Generator.name())) {
+                            (new GenerateChanel()).process();
+                        } else if (role.equals(Roles.Mapper.name())) {
                             //process mapping channels, fast
                             (new NonAggregatedL10U01Chanel()).process();
                             (new A11L10U01AggregatorChannel()).process();
+                            (new L00IA01AggregatorChannel()).process();
+                            (new U00IA10AggregatorChannel()).process();
                         } else if (role.equals(Roles.Calculator.name())) {
                             //process calculation channels, takes longer
-                            (new GenerateChanel()).process();
+                            (new A00Chanel()).process();
+                            (new U00IA10Chanel()).process();
+                            (new L00IA01Chanel()).process();
+                            (new AggregatedA11L10U01Chanel()).process();
+                        } else if (role.equals("first")) {
+                            (new NonAggregatedL10U01Chanel()).process();
+
+                            (new A00Chanel()).process();
+                            (new U00IA10Chanel()).process();
+                            (new L00IA01Chanel()).process();
+                            (new AggregatedA11L10U01Chanel()).process();
+                        } else if (role.equals("second")) {
+                            (new A11L10U01AggregatorChannel()).process();
+
+                            (new A00Chanel()).process();
+                            (new U00IA10Chanel()).process();
+                            (new L00IA01Chanel()).process();
+                            (new AggregatedA11L10U01Chanel()).process();
+                        } else if (role.equals("third")) {
+                            (new L00IA01AggregatorChannel()).process();
+
+                            (new A00Chanel()).process();
+                            (new U00IA10Chanel()).process();
+                            (new L00IA01Chanel()).process();
+                            (new AggregatedA11L10U01Chanel()).process();
+                        } else if (role.equals("fourth")) {
+                            (new U00IA10AggregatorChannel()).process();
+
                             (new A00Chanel()).process();
                             (new U00IA10Chanel()).process();
                             (new L00IA01Chanel()).process();

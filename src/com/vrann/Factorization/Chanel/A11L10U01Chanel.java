@@ -31,6 +31,7 @@ public class A11L10U01Chanel {
         //listen for the messages from queue
         List<MessageInterface> messagesA11 = driver.getAllMessagesFor(Chanels.A11);
         if (messagesA11.size() == 0) {
+            driver.requeue(Chanels.L10U01, messageL10U01);
             return;
         }
 

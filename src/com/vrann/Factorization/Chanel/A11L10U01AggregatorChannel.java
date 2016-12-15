@@ -30,8 +30,7 @@ public class A11L10U01AggregatorChannel {
         List<MessageInterface> messagesA11 = driver.getAllMessagesFor(Chanels.A11);
         if (messagesA11.size() == 0) {
             for (MessageInterface message: messagesL10U01) {
-                driver.send(Chanels.L10U01, new JSONObject(new JSONTokener(message.getBody())));
-                driver.delete(Chanels.L10U01, message.getId());
+                driver.requeue(Chanels.L10U01, message);
             }
             return;
         }
@@ -49,7 +48,7 @@ public class A11L10U01AggregatorChannel {
             String combinationKey = String.format("%s.%s.%s", map.get("K"), map.get("I"), map.get("J"));
             if (visitedCombinations.containsKey(combinationKey)) {
                 //driver.delete(Chanels.L10U01, messageL10U01.getId());
-                System.out.printf("Visited combination L10U01 %s", combinationKey);
+//                System.out.printf("Visited combination L10U01 %s", combinationKey);
                 break;
             }
             visitedCombinations.put(combinationKey, map);
@@ -66,7 +65,7 @@ public class A11L10U01AggregatorChannel {
             String combinationKey = String.format("%s.%s.%s", K, I, J);
             if (visitedA11.containsKey(combinationKey)) {
                 //driver.delete(Chanels.A11, messageA11.getId());
-                System.out.printf("Visited combination A11 %s", combinationKey);
+//                System.out.printf("Visited combination A11 %s", combinationKey);
                 break;
             }
             visitedA11.put(combinationKey, true);

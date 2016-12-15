@@ -26,7 +26,6 @@ public class AggregatedA11L10U01Chanel {
             return;
         }
 
-
         JSONObject dataL10U01A11 = new JSONObject(new JSONTokener(messageL10U01A11.getBody()));
         int K = Integer.parseInt(dataL10U01A11.get("K").toString());
         int J = Integer.parseInt(dataL10U01A11.get("J").toString());
